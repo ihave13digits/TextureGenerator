@@ -2,6 +2,7 @@
 
 import pygame as pg
 from os import path
+from random import randint
 
 class TextureGenerator:
 
@@ -11,27 +12,45 @@ class TextureGenerator:
         self.width = w
         self.height = h
         self.tile = t
-        self.procedure = 0
-        self.procedures = [self.proc_random, self.proc_cloth, self.proc_wood, self.proc_brick, self.proc_plank]
-        self.blend = 0
-        self.blends = [self.combine]
+        self.procedures = [self.proc_random, self.proc_cloth, self.proc_skin, self.proc_wood, self.proc_brick, self.proc_plank]
+        self.blends = [self.subtract, self.add, self.combine]
         self.base_color = C
         self.color = c
-        self.t = 0
         self.target = 0
-        self.targets = [self.base_color, self.color]
-        self.matrix = self.make_matrix()
+        self.targets = ['procedure','blend','grain','stagger','R','G','B','r','g','b']
+        self.matrix = []
         self.img = pg.Surface((w, h))
         self.rect = self.img.get_rect()
         self.rect.topleft = (0, 0)
         self.root_dir = path.dirname(__file__)
         self.img_dir = path.join(self.root_dir, 'img')
         self.img_name = 'random'
-        self.saved_imgs = {
-                'random':0, 'cloth':0, 'wood':0, 'brick':0, 'plank':0}
+        self.lmt = {
+                'procedure' : [0, len(self.procedures)-1],
+                'blend' : [0, len(self.blends)-1],
+                'grain' : [0, 100],
+                'stagger' : [0, 0],
+                'R' : [0, 255],
+                'G' : [0, 255],
+                'B' : [0, 255],
+                'r' : [0, 255],
+                'g' : [0, 255],
+                'b' : [0, 255],
+                }
+        self.var = {
+                'procedure' : 0,
+                'blend' : 0,
+                'grain' : 66,
+                'stagger' : 0,
+                'R' : C[0],
+                'G' : C[1],
+                'B' : C[2],
+                'r' : c[0],
+                'g' : c[1],
+                'b' : c[2]
+                }
+        self.saved_imgs = {'random':0, 'cloth':0, 'skin':0, 'wood':0, 'brick':0, 'plank':0}
         self.screen = pg.display.set_mode((w*self.tile+128, h*self.tile))
-        pg.display.set_caption("TextureGenerator")
-        pg.key.set_repeat(50, 100)
 
     def start(self):
         try:
@@ -42,18 +61,28 @@ class TextureGenerator:
         self.img_dir = path.join(self.root_dir, 'img')
 
         pg.font.init()
+        pg.display.set_caption("TextureGenerator")
+        pg.key.set_repeat(50, 100)
+        self.matrix = self.make_matrix()
         self.update_all()
         self.run()
 
     def update_info(self):
-        self.show_text("Base R: {}".format(self.base_color[0]), self.width*self.tile, 0)
-        self.show_text("Base G: {}".format(self.base_color[1]), self.width*self.tile, 32)
-        self.show_text("Base B: {}".format(self.base_color[2]), self.width*self.tile, 64)
-        self.show_text("Hue R:  {}".format(self.color[0]), self.width*self.tile, 128)
-        self.show_text("Hue G:  {}".format(self.color[1]), self.width*self.tile, 160)
-        self.show_text("Hue B:  {}".format(self.color[2]), self.width*self.tile, 192)
-        self.show_text("{}:  {}".format(self.img_name, self.saved_imgs[self.img_name]), self.width*self.tile, 256)
-        self.show_text("{} {}".format(self.target, self.t), self.width*self.tile, 288)
+        self.show_text("{}:  {}".format(self.img_name, self.saved_imgs[self.img_name]), self.width*self.tile, 0)
+        self.show_text("{}".format(self.targets[self.target]), self.width*self.tile, 20)
+        
+        self.show_text("type:  {}".format(self.img_name), self.width*self.tile, 60)
+        self.show_text("blend:  {}".format(self.var['blend']), self.width*self.tile, 80)
+        self.show_text("grain:  {}".format(self.var['grain']), self.width*self.tile, 100)
+        self.show_text("stagger:  {}".format(self.var['stagger']), self.width*self.tile, 120)
+
+        self.show_text("R: {}".format(self.var['R']), self.width*self.tile, 160)
+        self.show_text("G: {}".format(self.var['G']), self.width*self.tile, 180)
+        self.show_text("B: {}".format(self.var['B']), self.width*self.tile, 200)
+        
+        self.show_text("r:  {}".format(self.var['r']), self.width*self.tile, 240)
+        self.show_text("g:  {}".format(self.var['g']), self.width*self.tile, 260)
+        self.show_text("b:  {}".format(self.var['b']), self.width*self.tile, 280)
 
     def update_all(self):
         self.screen.fill((0, 0, 0))
@@ -72,17 +101,8 @@ class TextureGenerator:
                     self.running = False
 
                 if event.key == pg.K_1:
-                    if self.procedure  > 0:
-                        self.procedure -= 1
-                        self.update_all()
-                if event.key == pg.K_2:
-                    if self.procedure < len(self.procedures)-1:
-                        self.procedure += 1
-                        self.update_all()
-
-                if event.key == pg.K_3:
                     self.update_all()
-                if event.key == pg.K_4:
+                if event.key == pg.K_2:
                     self.port()
                     self.update_all()
 
@@ -95,29 +115,24 @@ class TextureGenerator:
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_w:
-                    if self.t > 0:
-                        self.t -= 1
-                    else:
-                        if self.target > 0:
-                            self.t = 2
-                            self.target -= 1
+                    if self.target > 0:
+                        self.target -= 1
                     self.update_all()
                 if event.key == pg.K_s:
-                    if self.t < 2:
-                        self.t += 1
-                    else:
-                        if self.target < 1:
-                            self.t = 0
-                            self.target += 1
+                    if self.target < len(self.targets)-1:
+                        self.target += 1
                     self.update_all()
 
                 if event.key == pg.K_a:
-                    if self.targets[self.target][self.t] > 0:
-                        self.targets[self.target][self.t] -= 1
+                    if self.var[self.targets[self.target]] > self.lmt[self.targets[self.target]][0]:
+                        self.var[self.targets[self.target]] -= 1
                     self.update_all()
                 if event.key == pg.K_d:
-                    if self.targets[self.target][self.t] < 255:
-                        self.targets[self.target][self.t] += 1
+                    if self.lmt[self.targets[self.target]][1] != 0:
+                        if self.var[self.targets[self.target]] < self.lmt[self.targets[self.target]][1]:
+                            self.var[self.targets[self.target]] += 1
+                    else:
+                        self.var[self.targets[self.target]] += 1
                     self.update_all()
 
     def run(self):
@@ -126,7 +141,7 @@ class TextureGenerator:
 
     def make_matrix(self):
         matrix = self.fill_solid(self.base_color)
-        self.matrix = self.procedures[self.procedure](matrix)
+        self.matrix = self.procedures[self.var['procedure']](matrix)
 
     def make_img(self):
         for x in range(self.width):
@@ -167,243 +182,225 @@ class TextureGenerator:
 
         return matrix
 
-    def combine(self, col1, col2):
+    def subtract(self, col1, col2):
         if not self.grey:
-            r = int(col1[0] + col2[0])
-            g = int(col1[1] + col2[1])
-            b = int(col1[2] + col2[2])
-
-            if r > 255:
-                r = 255
-            if r < 0:
-                r = 0
-
-            if g > 255:
-                g = 255
-            if g < 0:
-                g = 0
-
-            if b > 255:
-                b = 255
-            if b < 0:
-                b = 0
-
+            r = max(min(255, (col1[0]+col2[0])), 0)
+            g = max(min(255, (col1[1]+col2[1])), 0)
+            b = max(min(255, (col1[2]+col2[2])), 0)
             color = (r, g, b)
         else:
+            g = max(min(255, (((col1[0]+col1[1]+col1[2])/3)-((col1[0]+col1[1]+col1[2])/3))), 0)
             g = int(col1[0] + col2[0])
-            if g > 255:
-                g = 255
-            if g < 0:
-                 g = 0
             color = (g, g, g)
         return color
 
+    def add(self, col1, col2):
+        if not self.grey:
+            r = max(min(255, (col1[0]+col2[0])), 0)
+            g = max(min(255, (col1[1]+col2[1])), 0)
+            b = max(min(255, (col1[2]+col2[2])), 0)
+            color = (r, g, b)
+        else:
+            g = max(min(255, (((col1[0]+col1[1]+col1[2])/3)+((col1[0]+col1[1]+col1[2])/3))), 0)
+            g = int(col1[0] + col2[0])
+            color = (g, g, g)
+        return color
+
+    def combine(self, col1, col2):
+        if not self.grey:
+            r = max(min(255, ((col1[0]+col2[0])/2)), 0)
+            g = max(min(255, ((col1[1]+col2[1])/2)), 0)
+            b = max(min(255, ((col1[2]+col2[2])/2)), 0)
+            color = (r, g, b)
+        else:
+            g = max(min(255, ((((col1[0]+col1[1]+col1[2])/3)+((col1[0]+col1[1]+col1[2])/3))/2)), 0)
+            g = int(col1[0] + col2[0])
+            color = (g, g, g)
+        return color
+
+    def RGB(self, scale):
+        if not self.grey:
+            R = randint(-int(self.var['r']/scale), 0)
+            G = randint(-int(self.var['g']/scale), 0)
+            B = randint(-int(self.var['b']/scale), 0)
+        else:
+            g = randint(-int(((self.var['r']+self.var['g']+self.var['b'])/3)/scale), 0)
+            R, G, B = g, g, g
+        return R, G, B
+
+    def over_circle(self, m, scale=1, pack=1):
+        matrix = m
+        size = int(randint(int(self.width/8), int(self.width/4))*scale)
+        X = randint(int(size/2), int(size*pack))
+        Y = randint(int(size/2), int(size*pack))
+        d = int(size*.6)
+        for depth in range(d):
+            w = int(size/2)
+            h = int(size/2)
+            cx = X + (int(size/2))
+            cy = Y + int(size/2)
+            v1 = (Y * self.width) + X
+            for x in range(int(X), int((X)+size)):
+                for y in range(int(Y), int((Y)+size)):
+                    v = v1 + (y * int(self.width) + x)
+                    try:
+                        if abs( (((x-cx)**2) / w**2) + (((y-cy)**2) / h**2) ) <= 1:
+                            try:
+                                R, G, B = self.RGB(1)
+                                matrix[v] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+                            except IndexError:
+                                pass#print('index error')
+                    except ZeroDivisionError:
+                        pass#print('division error')
+            d -= 1
+        return matrix
+
+    def over_oval(self, m, scale=1, pack=1):
+        matrix = m
+        size = int(randint(int(self.width/8), int(self.width/4))*scale)
+        X = randint(int(size/2), int(size*pack))
+        Y = randint(int(size/2), int(size*pack))
+        d = int(size*.6)
+        for depth in range(int(d)):
+            w = int(size/8)
+            h = int(size/4)
+            cx = X + int(w/2)
+            cy = Y + int(h/2)
+            v1 = (Y * self.width) + X
+            for x in range(int(X), int((X)+(w*2))):
+                for y in range(int(Y), int((Y)+(h*2))):
+                    v = v1 + (y * int(self.width) + x)
+                    try:
+                        if abs( (((x-cx)**2) / w**2) + (((y-cy)**2) / h**2) ) <= 1:
+                            try:
+                                R, G, B = self.RGB(depth)
+                                matrix[v] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+                            except IndexError:
+                                pass#print('index error')
+                    except ZeroDivisionError:
+                        pass#print('division error')
+            d -= 1
+        return matrix
+
     def proc_random(self, m):
-        from random import randint
-        
         self.img_name = "random"
         matrix = m
-        if not self.grey:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    R = randint(0, self.color[0])
-                    G = randint(0, self.color[1])
-                    B = randint(0, self.color[2])
-                    matrix[index] = self.blends[self.blend](self.base_color, (R, G, B))
-        else:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    g = randint(-self.color[0], 0)
-                    matrix[index] = self.blends[self.blend](self.base_color, (g, g, g))
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(1)
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         return matrix
 
     def proc_cloth(self, m):
-        from random import randint
-
         self.img_name = "cloth"
         matrix = m
         count = 0
-        stagger = 1
-        if not self.grey:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    R = randint(-int(self.color[0]/8), 0)
-                    G = randint(-int(self.color[1]/8), 0)
-                    B = randint(-int(self.color[2]/8), 0)
-                    if y % 2 == 0 and count % 2 == 0:
-                        R = randint(-int(self.color[0]/4), 0)
-                        G = randint(-int(self.color[1]/4), 0)
-                        B = randint(-int(self.color[2]/4), 0)
-                    count += 1
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (R, G, B))
-        else:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    g = randint(-self.color[0], 0)
-                    if y % 2 == 0 and count % 2 == 0:
-                        g = randint(-int(self.color[0]/4), 0)
-                    count += 1
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (g, g, g))
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(1)
+                if y % 2 == 0 and count % 2 == 0:
+                    R, G, B = self.RGB(4)
+                count += 1
+                if count > self.var['stagger']:
+                    count = 0
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+        return matrix
+
+    def proc_skin(self, m):
+        self.img_name = "skin"
+        matrix = m
+        count = 0
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(8)
+                if y % 2 == 0 and count % 2 == 0:
+                    R, G, B = self.RGB(4)
+                count += 1
+                if count > self.var['stagger']:
+                    count = 0
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+        for dense in range(randint(0, 2)):
+            matrix = self.over_circle(matrix, scale=.5, pack=3)
         return matrix
 
     def proc_wood(self, m):
-        from random import randint
-
         self.img_name = "wood"
         matrix = m
         count = 0
-        stagger = int(self.width*4)
-        if not self.grey:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    R = randint(-int(self.color[0]/8), 0)
-                    G = randint(-int(self.color[1]/8), 0)
-                    B = randint(-int(self.color[2]/8), 0)
-                    if y % int(self.width/8) == 0:
-                        count += 1
-                    if y % 2 == 0 and count == 0:
-                        R = randint(-int(self.color[0]/4), 0)
-                        G = randint(-int(self.color[1]/4), 0)
-                        B = randint(-int(self.color[2]/4), 0)
-                    if y % 2 == 0 and count == 1:
-                        R = randint(-int(self.color[0]/2), 0)
-                        G = randint(-int(self.color[1]/2), 0)
-                        B = randint(-int(self.color[2]/2), 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (R, G, B))
-        else:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    g = randint(-self.color[0], 0)
-                    if x % int(self.width/8) == 0:
-                        count += 1
-                    if x % 2 == 0 and count % 2 == 0:
-                        g = randint(-int(self.color[0]/4), 0)
-                    if x % 2 == 0 and count % 2 == 1:
-                        g = randint(-int(self.color[0]/2), 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (g, g, g))
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(8)
+                if x % int(self.width/8) == 0:
+                    count += 1
+                if x % 2 == 0 and count % 2 == 0:
+                    R, G, B = self.RGB(4)
+                    chance = randint(0, 100)
+                    if chance < self.var['grain']:
+                        R, G, B = self.RGB(2)
+                if x % 2 == 0 and count % 2 == 1:
+                    R, G, B = self.RGB(2)
+                    chance = randint(0, 100)
+                    if chance < self.var['grain']:
+                        R, G, B = self.RGB(4)
+                if count > self.var['stagger']:
+                    count = 0
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+        
+        for dense in range(randint(0, 8)):
+            matrix = self.over_oval(matrix, pack=1.75)
+
         return matrix
 
     def proc_brick(self, m):
-        from random import randint
-        from math import sqrt
-
         self.img_name = "brick"
         matrix = m
         count = 0
-        stagger = int(self.height / sqrt(self.height))
-        if not self.grey:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    R = randint(-int(self.color[0]/16), 0)
-                    G = randint(-int(self.color[1]/16), 0)
-                    B = randint(-int(self.color[2]/16), 0)
-                    if y % int(self.height / 8) == 0:
-                        count += 1
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if x % int(self.width / 4) == 0 and count % 2 == 0:
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if x % int(self.width / 4) == int(self.width / 8) and count % 2 == 1:
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (R, G, B))
-        
-        else:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    g = randint(-int(self.color[0]/16), 0)
-                    if y % int(self.height / 8) == 0:
-                        count += 1
-                        g = randint(-self.color[0], 0)
-                    if x % int(self.width / 4) == 0 and count % 2 == 0:
-                        g = randint(-self.color[0], 0)
-                    if x % int(self.width / 4) == int(self.width / 8) and count % 2 == 1:
-                        g = randint(-self.color[0], 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (g, g, g))
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(16)
+                chance = randint(0, 100)
+                if chance < self.var['grain']:
+                    R, G, B = self.RGB(8)
+                if y % int(self.height / 8) == 0:
+                    count += 1
+                    R, G, B = self.RGB(1)
+                if x % int(self.width / 4) == 0 and count % 2 == 0:
+                    R, G, B = self.RGB(1)
+                if x % int(self.width / 4) == int(self.width / 8) and count % 2 == 1:
+                    R, G, B = self.RGB(1)
+                if count > self.var['stagger']:
+                    count = 0
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         return matrix
 
     def proc_plank(self, m):
-        from random import randint
-
         self.img_name = "plank"
         matrix = m
         count = 0
-        stagger = 3
-        grain = 33
-
-        if not self.grey:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    R = randint(-int(self.color[0]/16), 0)
-                    G = randint(-int(self.color[1]/16), 0)
-                    B = randint(-int(self.color[2]/16), 0)
-                    if x % int(self.width / int(self.width / 2)) == 0:
-                        chance = randint(0, 100)
-                        if chance < grain:
-                            R = randint(-(self.color[0]/4), 0)
-                            G = randint(-(self.color[1]/4), 0)
-                            B = randint(-(self.color[2]/4), 0)
-                    if x % int(self.width / 8) == 0:
-                        count += 1
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if y % int(self.height / 2) == 0 and count % 2 == 0:
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if y % int(self.height / 2) == int(self.height / 4) and count % 2 == 1:
-                        R = randint(-self.color[0], 0)
-                        G = randint(-self.color[1], 0)
-                        B = randint(-self.color[2], 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (R, G, B))
-        else:
-            for y in range(self.height):
-                for x in range(self.width):
-                    index = (y * self.width) + x
-                    g = randint(-int(self.color[0]/16), 0)
-                    if x % int(self.width / int(self.width / 2)) == 0:
-                        chance = randint(0, 100)
-                        if chance < grain:
-                            g = randint(-(self.color[0]/4), 0)
-                    if x % int(self.width / 8) == 0:
-                        count += 1
-                        g = randint(-self.color[0], 0)
-                    if y % int(self.height / 2) == 0 and count % 2 == 0:
-                        g = randint(-self.color[0], 0)
-                    if y % int(self.height / 2) == int(self.height / 4) and count % 2 == 1:
-                        g = randint(-self.color[0], 0)
-                    if count > stagger:
-                        count = 0
-                    matrix[index] = self.blends[self.blend](self.base_color, (g, g, g))
+        for y in range(self.height):
+            for x in range(self.width):
+                index = (y * self.width) + x
+                R, G, B = self.RGB(16)
+                if x % int(self.width / int(self.width / 2)) == 0:
+                    chance = randint(0, 100)
+                    if chance < self.var['grain']:
+                        R, G, B = self.RGB(4)
+                if x % int(self.width / 8) == 0:
+                    count += 1
+                    R, G, B = self.RGB(1)
+                if y % int(self.height / 2) == 0 and count % 2 == 0:
+                    R, G, B = self.RGB(1)
+                if y % int(self.height / 2) == int(self.height / 4) and count % 2 == 1:
+                    R, G, B = self.RGB(1)
+                if count > self.var['stagger']:
+                    count = 0
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         return matrix
 
-TG = TextureGenerator(64, 64, 10, [255, 255, 255], [32, 32, 32])
+TG = TextureGenerator(64, 64, 10, [128, 128, 128], [16, 16, 16])
 TG.start()
