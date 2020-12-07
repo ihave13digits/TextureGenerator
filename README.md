@@ -9,6 +9,7 @@ Controls:
     2.......Save Image
 
     G.......Toggle Color
+    M.......Toggle Mode
     
     W.......Menu Selection
     S.......Memu Selection
