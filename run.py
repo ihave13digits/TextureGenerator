@@ -341,16 +341,13 @@ class TextureGenerator:
     def proc_noise(self, m):
         self.img_name = "noise"
         matrix = []
-        seed = []
-
         for y in range(self.height):
             for x in range(self.height):
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(4)
+                    R, G, B = self.RGB(2)
                 matrix.append(self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B)))
-
         for i in range(self.var['octaves']):
             for y in range(self.height):
                 for x in range(self.width):
@@ -373,7 +370,6 @@ class TextureGenerator:
                     g = int(sum(valg)/len(valg))
                     b = int(sum(valb)/len(valb))
                     matrix[y * self.width + x] = (r, g, b)
-
         return matrix
 
     def proc_fuzz(self, m):
@@ -518,5 +514,5 @@ class TextureGenerator:
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
         return matrix
 
-TG = TextureGenerator(64, 64, 10, [228, 228, 228], [32, 32, 32])
+TG = TextureGenerator(64, 64, 10, [255, 255, 255], [255, 255, 255])
 TG.start()
