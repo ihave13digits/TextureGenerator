@@ -184,9 +184,9 @@ class TextureGenerator:
 
     def subtract(self, col1, col2):
         if not self.grey:
-            r = max(min(255, (col1[0]+col2[0])), 0)
-            g = max(min(255, (col1[1]+col2[1])), 0)
-            b = max(min(255, (col1[2]+col2[2])), 0)
+            r = max(min(255, (col1[0]-col2[0])), 0)
+            g = max(min(255, (col1[1]-col2[1])), 0)
+            b = max(min(255, (col1[2]-col2[2])), 0)
             color = (r, g, b)
         else:
             g = max(min(255, (((col1[0]+col1[1]+col1[2])/3)-((col1[0]+col1[1]+col1[2])/3))), 0)
