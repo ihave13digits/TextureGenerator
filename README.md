@@ -12,6 +12,6 @@ Controls:
     M.......Toggle Mode
     
     W.......Menu Selection
-    S.......Memu Selection
+    S.......Menu Selection
     A.......Decrement Selection
     D.......Increment Selection
