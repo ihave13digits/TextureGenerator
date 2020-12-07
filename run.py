@@ -9,10 +9,11 @@ class TextureGenerator:
     def __init__(self, w, h, t, C, c):
         self.running = True
         self.grey = True
+        self.mode = True
         self.width = w
         self.height = h
         self.tile = t
-        self.procedures = [self.proc_random, self.proc_noise, self.proc_fuzz, self.proc_cloth, self.proc_skin, self.proc_wood, self.proc_brick, self.proc_plank]
+        self.procedures = [self.proc_random, self.proc_noise, self.proc_noisy, self.proc_fuzz, self.proc_cloth, self.proc_skin, self.proc_wood, self.proc_brick, self.proc_plank]
         self.blends = [self.blend_subtract, self.blend_add, self.blend_combine]
         self.target = 0
         self.targets = []
@@ -27,7 +28,7 @@ class TextureGenerator:
                 'procedure' : [0, len(self.procedures)-1],
                 'blend' : [0, len(self.blends)-1],
                 'grain' : [0, 100],
-                'scale' : [0, 0],
+                'scale' : [1, 0],
                 'pack' : [1, 0],
                 'stagger' : [0, 0],
                 'density' : [0, 0],
@@ -55,7 +56,7 @@ class TextureGenerator:
                 'g' : c[1],
                 'b' : c[2]
                 }
-        self.saved_imgs = {'random':0, 'noise':0, 'fuzz':0, 'cloth':0, 'skin':0, 'wood':0, 'brick':0, 'plank':0}
+        self.saved_imgs = {'random':0, 'noise':0, 'noisy':0, 'fuzz':0, 'cloth':0, 'skin':0, 'wood':0, 'brick':0, 'plank':0}
         self.screen = pg.display.set_mode((w*self.tile+128, h*self.tile))
 
     def start(self):
@@ -127,6 +128,13 @@ class TextureGenerator:
                         self.grey = True
                     else:
                         self.grey = False
+                    self.update_all()
+
+                if event.key == pg.K_m:
+                    if self.mode == False:
+                        self.mode = True
+                    else:
+                        self.mode = False
                     self.update_all()
 
                 if event.key == pg.K_w:
@@ -263,11 +271,19 @@ class TextureGenerator:
 
     def RGB(self, scale):
         if not self.grey:
-            R = randint(-int(self.var['r']/scale), 0)
-            G = randint(-int(self.var['g']/scale), 0)
-            B = randint(-int(self.var['b']/scale), 0)
+            if self.mode:
+                R = randint(-int(self.var['r']/scale), 0)
+                G = randint(-int(self.var['g']/scale), 0)
+                B = randint(-int(self.var['b']/scale), 0)
+            else:
+                R = -int(self.var['r']/scale)
+                G = -int(self.var['g']/scale)
+                B = -int(self.var['b']/scale)
         else:
-            g = randint(-int(((self.var['r']+self.var['g']+self.var['b'])/3)/scale), 0)
+            if self.mode:
+                g = randint(-int(((self.var['r']+self.var['g']+self.var['b'])/3)/scale), 0)
+            else:
+                g = -int(((self.var['r']+self.var['g']+self.var['b'])/3)/scale)
             R, G, B = g, g, g
         return R, G, B
 
@@ -326,6 +342,31 @@ class TextureGenerator:
             pass
         return matrix
 
+    def over_blur(self, m):
+        matrix = m
+        for y in range(self.height):
+            for x in range(self.width):
+                valr = []
+                valg = []
+                valb = []
+                for ny in range(-1, 1):
+                    for nx in range(-1, 1):
+                        try:
+                            index = (y * self.width + x) + (ny * self.width + nx)
+                            vr = matrix[index][0]
+                            vg = matrix[index][1]
+                            vb = matrix[index][2]
+                            valr.append(vr)
+                            valg.append(vg)
+                            valb.append(vb)
+                        except:
+                            pass
+                r = int(sum(valr)/len(valr))
+                g = int(sum(valg)/len(valg))
+                b = int(sum(valb)/len(valb))
+                matrix[y * self.width + x] = (r, g, b)
+        return matrix
+
     def proc_random(self, m):
         self.img_name = "random"
         matrix = m
@@ -342,34 +383,38 @@ class TextureGenerator:
         self.img_name = "noise"
         matrix = []
         for y in range(self.height):
-            for x in range(self.height):
+            for x in range(self.width):
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
                     R, G, B = self.RGB(2)
                 matrix.append(self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B)))
         for i in range(self.var['octaves']):
-            for y in range(self.height):
-                for x in range(self.width):
-                    valr = []
-                    valg = []
-                    valb = []
-                    for ny in range(-1, 1):
-                        for nx in range(-1, 1):
-                            try:
-                                index = (y * self.width + x) + (ny * self.width + nx)
-                                vr = matrix[index][0]
-                                vg = matrix[index][1]
-                                vb = matrix[index][2]
-                                valr.append(vr)
-                                valg.append(vg)
-                                valb.append(vb)
-                            except:
-                                pass
-                    r = int(sum(valr)/len(valr))
-                    g = int(sum(valg)/len(valg))
-                    b = int(sum(valb)/len(valb))
-                    matrix[y * self.width + x] = (r, g, b)
+            matrix = self.over_blur(matrix)
+        return matrix
+
+    def proc_noisy(self, m):
+        self.img_name = "noisy"
+        matrix = m
+        for y in range(self.height):
+            for x in range(self.width):
+                R, G, B = self.RGB(8)
+                chance = randint(0, 100)
+                if chance < self.var['grain']:
+                    R, G, B = self.RGB(1)
+                index = (y * self.width) + x
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+
+        for y in range(int(self.height/self.var['scale'])):
+            for x in range(int(self.width/self.var['scale'])):
+                R, G, B = self.RGB(1)
+                chance = randint(0, 100)
+                if chance < self.var['grain']:
+                    R, G, B = self.RGB(2)
+                index = ((y*self.var['scale']) * self.width) + (x*self.var['scale'])
+                matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_fuzz(self, m):
