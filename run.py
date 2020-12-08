@@ -289,57 +289,26 @@ class TextureGenerator:
 
     def over_circle(self, m, scale=1, pack=1):
         matrix = m
-        try:
-            size = int(randint(int(self.width/8), int(self.width/4))*scale)
-            X = randint(int(size/2), int(size*pack))
-            Y = randint(int(size/2), int(size*pack))
-            w = int(size/2)
-            h = int(size/2)
-            cx = X + (int(size/2))
-            cy = Y + int(size/2)
-            v1 = (Y * self.width) + X
-            for x in range(int(X), int((X)+size)):
-                for y in range(int(Y), int((Y)+size)):
-                    v = v1 + (y * int(self.width) + x)
-                    try:
-                        if abs( (((x-cx)**2) / w**2) + (((y-cy)**2) / h**2) ) <= 1:
-                            try:
-                                R, G, B = self.RGB(1)
-                                matrix[v] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-                            except IndexError:
-                                pass#print('index error')
-                    except ZeroDivisionError:
-                        pass#print('division error')
-                d -= 1
-        except:
-            pass
-        return matrix
-
-    def over_oval(self, m, scale=1, pack=1):
-        matrix = m
-        try:
-            size = int(randint(int(self.width/8), int(self.width/4))*scale)
-            X = randint(int(size/2), int(size*pack))
-            Y = randint(int(size/2), int(size*pack))
-            w = int(size/8)
-            h = int(size/4)
-            cx = X + int(w/2)
-            cy = Y + int(h/2)
-            v1 = (Y * self.width) + X
-            for x in range(int(X), int((X)+(w*2))):
-                for y in range(int(Y), int((Y)+(h*2))):
-                    v = v1 + (y * int(self.width) + x)
-                    try:
-                        if abs( (((x-cx)**2) / w**2) + (((y-cy)**2) / h**2) ) <= 1:
-                            try:
-                                R, G, B = self.RGB(depth)
-                                matrix[v] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-                            except IndexError:
-                                pass#print('index error')
-                    except ZeroDivisionError:
-                        pass#print('division error')
-        except:
-            pass
+        size = randint(0, int(scale))
+        X = randint(0, int(pack))
+        Y = randint(0, int(pack))
+        w = int(size/2)
+        h = int(size/2)
+        cx = X + (int(size/2))
+        cy = Y + int(size/2)
+        v1 = (Y * self.width) + X
+        for x in range(int(X), int((X)+size)):
+            for y in range(int(Y), int((Y)+size)):
+                v = v1 + (y * int(self.width) + x)
+                try:
+                    if abs( (((x-cx)**2) / w**2) + (((y-cy)**2) / h**2) ) <= 1:
+                        try:
+                            R, G, B = self.RGB(1)
+                            matrix[v] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+                        except IndexError:
+                            pass#print('index error')
+                except ZeroDivisionError:
+                    pass#print('division error')
         return matrix
 
     def over_blur(self, m):
@@ -374,9 +343,14 @@ class TextureGenerator:
             for x in range(self.width):
                 index = (y * self.width) + x
                 R, G, B = self.RGB(1)
+                chance = randint(0, 100)
+                if chance < self.var['grain']:
+                    R, G, B = self.RGB(2)
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_noise(self, m):
@@ -389,6 +363,8 @@ class TextureGenerator:
                 if chance < self.var['grain']:
                     R, G, B = self.RGB(2)
                 matrix.append(self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B)))
+        for dense in range(self.var['density']):
+            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -413,6 +389,8 @@ class TextureGenerator:
                     R, G, B = self.RGB(2)
                 index = ((y*self.var['scale']) * self.width) + (x*self.var['scale'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
+        for dense in range(self.var['density']):
+            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -428,8 +406,10 @@ class TextureGenerator:
                 if chance < self.var['grain']:
                     R, G, B = self.RGB(4)
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_cloth(self, m):
@@ -449,8 +429,10 @@ class TextureGenerator:
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_skin(self, m):
@@ -470,8 +452,10 @@ class TextureGenerator:
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_wood(self, m):
@@ -498,9 +482,10 @@ class TextureGenerator:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         
-        for dense in range(randint(0, self.var['density'])):
-            matrix = self.over_oval(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
-
+        for dense in range(self.var['density']):
+            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_brick(self, m):
@@ -529,8 +514,10 @@ class TextureGenerator:
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
     def proc_plank(self, m):
@@ -555,9 +542,11 @@ class TextureGenerator:
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
-        for dense in range(randint(0, self.var['density'])):
+        for dense in range(self.var['density']):
             matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+        for i in range(self.var['octaves']):
+            matrix = self.over_blur(matrix)
         return matrix
 
-TG = TextureGenerator(64, 64, 10, [255, 255, 255], [255, 255, 255])
+TG = TextureGenerator(64, 64, 8, [125, 125, 125], [255, 255, 255])
 TG.start()
