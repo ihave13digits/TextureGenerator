@@ -80,25 +80,25 @@ class TextureGenerator:
         self.run()
 
     def update_info(self):
-        self.show_text("{}:  {}".format(self.img_name, self.saved_imgs[self.img_name]), self.width*self.tile, 0)
+        self.show_text("{}:       {}".format(self.img_name, self.saved_imgs[self.img_name]), self.width*self.tile, 0)
         self.show_text("{}".format(self.targets[self.target]), self.width*self.tile, 20)
         
-        self.show_text("type:  {}".format(self.img_name), self.width*self.tile, 60)
-        self.show_text("blend:  {}".format(self.var['blend']), self.width*self.tile, 80)
-        self.show_text("grain:  {}".format(self.var['grain']), self.width*self.tile, 100)
-        self.show_text("scale:  {}".format(self.var['scale']), self.width*self.tile, 120)
-        self.show_text("pack:  {}".format(self.var['pack']), self.width*self.tile, 140)
+        self.show_text("type:     {}".format(self.img_name), self.width*self.tile, 60)
+        self.show_text("blend:    {}".format(self.var['blend']), self.width*self.tile, 80)
+        self.show_text("grain:    {}".format(self.var['grain']), self.width*self.tile, 100)
+        self.show_text("scale:    {}".format(self.var['scale']), self.width*self.tile, 120)
+        self.show_text("pack:     {}".format(self.var['pack']), self.width*self.tile, 140)
         self.show_text("stagger:  {}".format(self.var['stagger']), self.width*self.tile, 160)
         self.show_text("density:  {}".format(self.var['density']), self.width*self.tile, 180)
         self.show_text("octaves:  {}".format(self.var['octaves']), self.width*self.tile, 200)
 
-        self.show_text("R: {}".format(self.var['R']), self.width*self.tile, 240)
-        self.show_text("G: {}".format(self.var['G']), self.width*self.tile, 260)
-        self.show_text("B: {}".format(self.var['B']), self.width*self.tile, 280)
+        self.show_text("R:        {}".format(self.var['R']), self.width*self.tile, 240)
+        self.show_text("G:        {}".format(self.var['G']), self.width*self.tile, 260)
+        self.show_text("B:        {}".format(self.var['B']), self.width*self.tile, 280)
         
-        self.show_text("r:  {}".format(self.var['r']), self.width*self.tile, 320)
-        self.show_text("g:  {}".format(self.var['g']), self.width*self.tile, 340)
-        self.show_text("b:  {}".format(self.var['b']), self.width*self.tile, 360)
+        self.show_text("r:        {}".format(self.var['r']), self.width*self.tile, 320)
+        self.show_text("g:        {}".format(self.var['g']), self.width*self.tile, 340)
+        self.show_text("b:        {}".format(self.var['b']), self.width*self.tile, 360)
 
     def update_all(self):
         self.screen.fill((0, 0, 0))
@@ -224,7 +224,7 @@ class TextureGenerator:
         pg.display.flip()
 
     def port(self):
-        filename = "{}_{}".format(self.img_name, self.saved_imgs[self.img_name])
+        filename = "{}_{}.png".format(self.img_name, self.saved_imgs[self.img_name])
         pg.image.save(self.img, path.join(self.img_dir, filename))
         self.saved_imgs[self.img_name] += 1
 
@@ -445,7 +445,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(8)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(2)
                 if y % 2 == 0 and count % 2 == 0:
                     R, G, B = self.RGB(4)
                 count += 1
