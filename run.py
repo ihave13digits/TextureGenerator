@@ -2,6 +2,7 @@
 
 import pygame as pg
 from os import path
+from sys import argv
 from random import randint, seed
 
 class TextureGenerator:
@@ -10,6 +11,7 @@ class TextureGenerator:
         self.running = True
         self.grey = True
         self.mode = True
+        self.auto = True
         self.width = w
         self.height = h
         self.tile = t
@@ -83,7 +85,8 @@ class TextureGenerator:
             self.targets.append(key)
         
         self.matrix = self.make_matrix()
-        self.new_img()
+        if self.auto:
+            self.new_img()
         self.update_all()
         self.run()
 
@@ -148,12 +151,17 @@ class TextureGenerator:
                     else:
                         self.grey = False
                     self.update_all()
-
                 if event.key == pg.K_m:
                     if self.mode == False:
                         self.mode = True
                     else:
                         self.mode = False
+                    self.update_all()
+                if event.key == pg.K_p:
+                    if self.auto == False:
+                        self.auto = True
+                    else:
+                        self.auto = False
                     self.update_all()
 
                 if event.key == pg.K_r:
@@ -174,12 +182,14 @@ class TextureGenerator:
                 if (event.mod == pg.KMOD_LSHIFT or event.mod == pg.KMOD_RSHIFT) and event.key == pg.K_a:
                     if self.var[self.targets[self.target]] > self.lmt[self.targets[self.target]][0]+5:
                         self.var[self.targets[self.target]] -= 5
-                    self.new_img()
+                    if self.auto:
+                        self.new_img()
                     self.update_all()
                 elif event.key == pg.K_a:
                     if self.var[self.targets[self.target]] > self.lmt[self.targets[self.target]][0]:
                         self.var[self.targets[self.target]] -= 1
-                    self.new_img()
+                    if self.auto:
+                        self.new_img()
                     self.update_all()
                 if (event.mod == pg.KMOD_LSHIFT or event.mod == pg.KMOD_RSHIFT) and event.key == pg.K_d:
                     if self.lmt[self.targets[self.target]][1] != 0:
@@ -187,7 +197,8 @@ class TextureGenerator:
                             self.var[self.targets[self.target]] += 5
                     else:
                         self.var[self.targets[self.target]] += 5
-                    self.new_img()
+                    if self.auto:
+                        self.new_img()
                     self.update_all()
                 elif event.key == pg.K_d:
                     if self.lmt[self.targets[self.target]][1] != 0:
@@ -195,7 +206,8 @@ class TextureGenerator:
                             self.var[self.targets[self.target]] += 1
                     else:
                         self.var[self.targets[self.target]] += 1
-                    self.new_img()
+                    if self.auto:
+                        self.new_img()
                     self.update_all()
 
                 if event.key == pg.K_UP:
@@ -590,5 +602,18 @@ class TextureGenerator:
             matrix = self.over_blur(matrix)
         return matrix
 
-TG = TextureGenerator(128, 128, 4, [125, 125, 125], [255, 255, 255])
+
+TG = None
+if (len(argv) == 10):
+    TG = TextureGenerator(
+            int(argv[1]), int(argv[2]), int(argv[3]),
+            [int(argv[4]), int(argv[5]), int(argv[6])],
+            [int(argv[7]), int(argv[8]), int(argv[9])])
+elif (len(argv) == 4):
+    TG = TextureGenerator(
+            int(argv[1]), int(argv[2]), int(argv[3]),
+            [255, 255, 255],
+            [125, 125, 125])
+else:
+    TG = TextureGenerator(64, 64, 8, [255, 255, 255], [125, 125, 125])
 TG.start()
