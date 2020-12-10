@@ -296,16 +296,16 @@ class TextureGenerator:
     def RGB(self, scale):
         if not self.grey:
             if self.mode:
-                R = randint(-int(self.var['r']/(scale*(self.var['strength']*.1))), 0)
-                G = randint(-int(self.var['g']/(scale*(self.var['strength']*.1))), 0)
-                B = randint(-int(self.var['b']/(scale*(self.var['strength']*.1))), 0)
+                R = randint(0, int(self.var['r']/(scale*(self.var['strength']*.1))))
+                G = randint(0, int(self.var['g']/(scale*(self.var['strength']*.1))))
+                B = randint(0, int(self.var['b']/(scale*(self.var['strength']*.1))))
             else:
                 R = -int(self.var['r']/(scale*(self.var['strength']*.1)))
                 G = -int(self.var['g']/(scale*(self.var['strength']*.1)))
                 B = -int(self.var['b']/(scale*(self.var['strength']*.1)))
         else:
             if self.mode:
-                g = randint(-int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1))), 0)
+                g = randint(0, int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1))))
             else:
                 g = -int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1)))
             R, G, B = g, g, g
@@ -590,5 +590,5 @@ class TextureGenerator:
             matrix = self.over_blur(matrix)
         return matrix
 
-TG = TextureGenerator(64, 64, 8, [125, 125, 125], [255, 255, 255])
+TG = TextureGenerator(128, 128, 4, [125, 125, 125], [255, 255, 255])
 TG.start()
