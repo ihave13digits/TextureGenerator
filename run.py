@@ -36,6 +36,7 @@ class TextureGenerator:
                 'density' : [0, 0],
                 'octaves' : [0, 8],
                 'strength' : [1, 0],
+                'count' : [1, 0],
                 'seed' : [0,0],
                 'R' : [0, 255],
                 'G' : [0, 255],
@@ -54,6 +55,7 @@ class TextureGenerator:
                 'density' : 0,
                 'octaves' : 0,
                 'strength' : 1,
+                'count' : 1,
                 'seed' : 0,
                 'R' : C[0],
                 'G' : C[1],
@@ -101,16 +103,17 @@ class TextureGenerator:
         self.show_text("stagger:  {}".format(self.var['stagger']), self.width*self.tile, 160)
         self.show_text("density:  {}".format(self.var['density']), self.width*self.tile, 180)
         self.show_text("octaves:  {}".format(self.var['octaves']), self.width*self.tile, 200)
-        self.show_text("strength:  {}".format(self.var['strength']), self.width*self.tile, 220)
-        self.show_text("seed:  {}".format(self.var['seed']), self.width*self.tile, 240)
+        self.show_text("strength: {}".format(self.var['strength']), self.width*self.tile, 220)
+        self.show_text("count:    {}".format(self.var['count']), self.width*self.tile, 240)
+        self.show_text("seed:     {}".format(self.var['seed']), self.width*self.tile, 260)
 
-        self.show_text("R:        {}".format(self.var['R']), self.width*self.tile, 280)
-        self.show_text("G:        {}".format(self.var['G']), self.width*self.tile, 300)
-        self.show_text("B:        {}".format(self.var['B']), self.width*self.tile, 320)
+        self.show_text("R:        {}".format(self.var['R']), self.width*self.tile, 300)
+        self.show_text("G:        {}".format(self.var['G']), self.width*self.tile, 320)
+        self.show_text("B:        {}".format(self.var['B']), self.width*self.tile, 340)
         
-        self.show_text("r:        {}".format(self.var['r']), self.width*self.tile, 360)
-        self.show_text("g:        {}".format(self.var['g']), self.width*self.tile, 380)
-        self.show_text("b:        {}".format(self.var['b']), self.width*self.tile, 400)
+        self.show_text("r:        {}".format(self.var['r']), self.width*self.tile, 380)
+        self.show_text("g:        {}".format(self.var['g']), self.width*self.tile, 400)
+        self.show_text("b:        {}".format(self.var['b']), self.width*self.tile, 420)
 
     def update_all(self):
         seed(self.var['seed'])
@@ -293,26 +296,26 @@ class TextureGenerator:
     def RGB(self, scale):
         if not self.grey:
             if self.mode:
-                R = randint(-int(self.var['r']/(scale*(self.var['strength']*.1))), 0)
-                G = randint(-int(self.var['g']/(scale*(self.var['strength']*.1))), 0)
-                B = randint(-int(self.var['b']/(scale*(self.var['strength']*.1))), 0)
+                R = randint(0, int(self.var['r']/(scale*(self.var['strength']*.1))))
+                G = randint(0, int(self.var['g']/(scale*(self.var['strength']*.1))))
+                B = randint(0, int(self.var['b']/(scale*(self.var['strength']*.1))))
             else:
                 R = -int(self.var['r']/(scale*(self.var['strength']*.1)))
                 G = -int(self.var['g']/(scale*(self.var['strength']*.1)))
                 B = -int(self.var['b']/(scale*(self.var['strength']*.1)))
         else:
             if self.mode:
-                g = randint(-int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1))), 0)
+                g = randint(0, int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1))))
             else:
                 g = -int(((self.var['r']+self.var['g']+self.var['b'])/3)/(scale*(self.var['strength']*.1)))
             R, G, B = g, g, g
         return R, G, B
 
-    def over_circle(self, m, scale=1, pack=1):
+    def over_circle(self, m):
         matrix = m
-        size = randint(0, int(scale))
-        X = randint(0, int(pack))
-        Y = randint(0, int(pack))
+        size = randint(0, int(self.var['scale']*.1))
+        X = randint(0, int(self.var['pack']*.1))
+        Y = randint(0, int(self.var['pack']*.1))
         w = int(size/2)
         h = int(size/2)
         cx = X + (int(size/2))
@@ -369,7 +372,7 @@ class TextureGenerator:
                     R, G, B = self.RGB(2)
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -385,7 +388,7 @@ class TextureGenerator:
                     R, G, B = self.RGB(2)
                 matrix.append(self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B)))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -411,7 +414,7 @@ class TextureGenerator:
                 index = ((y*self.var['scale']) * self.width) + (x*self.var['scale'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -428,7 +431,7 @@ class TextureGenerator:
                     R, G, B = self.RGB(4)
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -446,7 +449,7 @@ class TextureGenerator:
                     R, G, B = self.RGB(8)
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -469,7 +472,7 @@ class TextureGenerator:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -492,7 +495,7 @@ class TextureGenerator:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -505,7 +508,7 @@ class TextureGenerator:
             for x in range(self.width):
                 index = (y * self.width) + x
                 R, G, B = self.RGB(8)
-                if x % int(self.width/8) == 0:
+                if x % int(self.width/self.var['count']) == 0:
                     count += 1
                 if x % 2 == 0 and count % 2 == 0:
                     R, G, B = self.RGB(4)
@@ -522,7 +525,7 @@ class TextureGenerator:
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -543,7 +546,7 @@ class TextureGenerator:
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
                         R, G, B = self.RGB(8)
-                if y % int(self.height / 8) == 0:
+                if y % int(self.height/self.var['count']) == 0:
                     count += 1
                     R, G, B = self.RGB(1)
                 if x % int(self.width / 4) == 0 and count % 2 == 0:
@@ -554,7 +557,7 @@ class TextureGenerator:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
@@ -571,7 +574,7 @@ class TextureGenerator:
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
                         R, G, B = self.RGB(4)
-                if x % int(self.width / 8) == 0:
+                if x % int(self.width/self.var['count']) == 0:
                     count += 1
                     R, G, B = self.RGB(1)
                 if y % int(self.height / 2) == 0 and count % 2 == 0:
@@ -582,10 +585,10 @@ class TextureGenerator:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
-            matrix = self.over_circle(matrix, scale=self.var['scale']*.1, pack=self.var['pack']*.1)
+            matrix = self.over_circle(matrix)
         for i in range(self.var['octaves']):
             matrix = self.over_blur(matrix)
         return matrix
 
-TG = TextureGenerator(64, 64, 8, [125, 125, 125], [255, 255, 255])
+TG = TextureGenerator(128, 128, 4, [125, 125, 125], [255, 255, 255])
 TG.start()
