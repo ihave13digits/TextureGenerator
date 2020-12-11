@@ -17,3 +17,7 @@ Controls:
     S.......Menu Selection
     A.......Decrement Selection
     D.......Increment Selection
+
+Command Line Arguments:
+
+    Width, Height, Pixel Size, R, G, B, r, g, b
