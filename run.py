@@ -31,15 +31,17 @@ class TextureGenerator:
         self.lmt = {
                 'procedure' : [0, len(self.procedures)-1],
                 'blend' : [0, len(self.blends)-1],
+                'seed' : [0,0],
                 'grain' : [0, 100],
                 'scale' : [1, 0],
                 'pack' : [1, 0],
+                'count' : [1, 0],
                 'stagger' : [0, 0],
                 'density' : [0, 0],
                 'octaves' : [0, 8],
+                'line' : [1, 0],
+                'texture' : [1, 0],
                 'strength' : [1, 0],
-                'count' : [1, 0],
-                'seed' : [0,0],
                 'R' : [0, 255],
                 'G' : [0, 255],
                 'B' : [0, 255],
@@ -50,15 +52,17 @@ class TextureGenerator:
         self.var = {
                 'procedure' : 0,
                 'blend' : 0,
+                'seed' : 0,
                 'grain' : 0,
                 'scale' : 1,
                 'pack' : 3,
+                'count' : 1,
                 'stagger' : 0,
                 'density' : 0,
                 'octaves' : 0,
+                'line' : 1,
+                'texture' : 1,
                 'strength' : 1,
-                'count' : 1,
-                'seed' : 0,
                 'R' : C[0],
                 'G' : C[1],
                 'B' : C[2],
@@ -100,23 +104,25 @@ class TextureGenerator:
         
         self.show_text("type:     {}".format(self.img_name), self.width*self.tile, 60)
         self.show_text("blend:    {}".format(self.var['blend']), self.width*self.tile, 80)
-        self.show_text("grain:    {}".format(self.var['grain']), self.width*self.tile, 100)
-        self.show_text("scale:    {}".format(self.var['scale']), self.width*self.tile, 120)
-        self.show_text("pack:     {}".format(self.var['pack']), self.width*self.tile, 140)
-        self.show_text("stagger:  {}".format(self.var['stagger']), self.width*self.tile, 160)
-        self.show_text("density:  {}".format(self.var['density']), self.width*self.tile, 180)
-        self.show_text("octaves:  {}".format(self.var['octaves']), self.width*self.tile, 200)
-        self.show_text("strength: {}".format(self.var['strength']), self.width*self.tile, 220)
-        self.show_text("count:    {}".format(self.var['count']), self.width*self.tile, 240)
-        self.show_text("seed:     {}".format(self.var['seed']), self.width*self.tile, 260)
+        self.show_text("seed:     {}".format(self.var['seed']), self.width*self.tile, 100)
+        self.show_text("grain:    {}".format(self.var['grain']), self.width*self.tile, 120)
+        self.show_text("scale:    {}".format(self.var['scale']), self.width*self.tile, 140)
+        self.show_text("pack:     {}".format(self.var['pack']), self.width*self.tile, 160)
+        self.show_text("count:    {}".format(self.var['count']), self.width*self.tile, 180)
+        self.show_text("stagger:  {}".format(self.var['stagger']), self.width*self.tile, 200)
+        self.show_text("density:  {}".format(self.var['density']), self.width*self.tile, 220)
+        self.show_text("octaves:  {}".format(self.var['octaves']), self.width*self.tile, 240)
+        self.show_text("line:  {}".format(self.var['line']), self.width*self.tile, 260)
+        self.show_text("texture:  {}".format(self.var['texture']), self.width*self.tile, 280)
+        self.show_text("strength: {}".format(self.var['strength']), self.width*self.tile, 300)
 
-        self.show_text("R:        {}".format(self.var['R']), self.width*self.tile, 300)
-        self.show_text("G:        {}".format(self.var['G']), self.width*self.tile, 320)
-        self.show_text("B:        {}".format(self.var['B']), self.width*self.tile, 340)
+        self.show_text("R:        {}".format(self.var['R']), self.width*self.tile, 340)
+        self.show_text("G:        {}".format(self.var['G']), self.width*self.tile, 360)
+        self.show_text("B:        {}".format(self.var['B']), self.width*self.tile, 380)
         
-        self.show_text("r:        {}".format(self.var['r']), self.width*self.tile, 380)
-        self.show_text("g:        {}".format(self.var['g']), self.width*self.tile, 400)
-        self.show_text("b:        {}".format(self.var['b']), self.width*self.tile, 420)
+        self.show_text("r:        {}".format(self.var['r']), self.width*self.tile, 420)
+        self.show_text("g:        {}".format(self.var['g']), self.width*self.tile, 440)
+        self.show_text("b:        {}".format(self.var['b']), self.width*self.tile, 460)
 
     def update_all(self):
         seed(self.var['seed'])
@@ -381,7 +387,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(2)
+                    R, G, B = self.RGB(self.var['texture'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
             matrix = self.over_circle(matrix)
@@ -397,7 +403,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(2)
+                    R, G, B = self.RGB(self.var['texture'])
                 matrix.append(self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B)))
         for dense in range(self.var['density']):
             matrix = self.over_circle(matrix)
@@ -410,7 +416,7 @@ class TextureGenerator:
         matrix = m
         for y in range(self.height):
             for x in range(self.width):
-                R, G, B = self.RGB(8)
+                R, G, B = self.RGB(4)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
                     R, G, B = self.RGB(1)
@@ -422,7 +428,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(2)
+                    R, G, B = self.RGB(self.var['texture'])
                 index = ((y*self.var['scale']) * self.width) + (x*self.var['scale'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
@@ -440,7 +446,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(4)
+                    R, G, B = self.RGB(self.var['texture'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
             matrix = self.over_circle(matrix)
@@ -458,7 +464,7 @@ class TextureGenerator:
                 R, G, B = self.RGB(i)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(8)
+                    R, G, B = self.RGB(self.var['texture'])
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
         for dense in range(self.var['density']):
             matrix = self.over_circle(matrix)
@@ -476,9 +482,9 @@ class TextureGenerator:
                 R, G, B = self.RGB(1)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(8)
+                    R, G, B = self.RGB(self.var['texture'])
                 if y % 2 == 0 and count % 2 == 0:
-                    R, G, B = self.RGB(4)
+                    R, G, B = self.RGB(self.var['line'])
                 count += 1
                 if count > self.var['stagger']:
                     count = 0
@@ -499,9 +505,9 @@ class TextureGenerator:
                 R, G, B = self.RGB(8)
                 chance = randint(0, 100)
                 if chance < self.var['grain']:
-                    R, G, B = self.RGB(2)
+                    R, G, B = self.RGB(self.var['texture'])
                 if y % 2 == 0 and count % 2 == 0:
-                    R, G, B = self.RGB(4)
+                    R, G, B = self.RGB(self.var['line'])
                 count += 1
                 if count > self.var['stagger']:
                     count = 0
@@ -523,15 +529,15 @@ class TextureGenerator:
                 if x % int(self.width/self.var['count']) == 0:
                     count += 1
                 if x % 2 == 0 and count % 2 == 0:
-                    R, G, B = self.RGB(4)
+                    R, G, B = self.RGB(self.var['line'])
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
-                        R, G, B = self.RGB(3)
+                        R, G, B = self.RGB(self.var['texture'])
                 if x % 2 == 0 and count % 2 == 1:
-                    R, G, B = self.RGB(2)
+                    R, G, B = self.RGB(self.var['line'])
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
-                        R, G, B = self.RGB(3)
+                        R, G, B = self.RGB(self.var['texture'])
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
@@ -553,18 +559,18 @@ class TextureGenerator:
                 if y % 2 == 0:
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
-                        R, G, B = self.RGB(4)
+                        R, G, B = self.RGB(self.var['texture'])
                 if y % 2 == 1:
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
-                        R, G, B = self.RGB(8)
+                        R, G, B = self.RGB(self.var['texture'])
                 if y % int(self.height/self.var['count']) == 0:
                     count += 1
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if x % int(self.width / 4) == 0 and count % 2 == 0:
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if x % int(self.width / 4) == int(self.width / 8) and count % 2 == 1:
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
@@ -585,14 +591,14 @@ class TextureGenerator:
                 if x % int(self.width / int(self.width / 2)) == 0:
                     chance = randint(0, 100)
                     if chance < self.var['grain']:
-                        R, G, B = self.RGB(4)
+                        R, G, B = self.RGB(self.var['texture'])
                 if x % int(self.width/self.var['count']) == 0:
                     count += 1
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if y % int(self.height / 2) == 0 and count % 2 == 0:
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if y % int(self.height / 2) == int(self.height / 4) and count % 2 == 1:
-                    R, G, B = self.RGB(1)
+                    R, G, B = self.RGB(self.var['line'])
                 if count > self.var['stagger']:
                     count = 0
                 matrix[index] = self.blends[self.var['blend']]((self.var['R'], self.var['G'], self.var['B']), (R, G, B))
