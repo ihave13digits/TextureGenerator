@@ -79,10 +79,17 @@ def over_smear(m):
     return matrix
 
 def overlay_img(matrix):
-    for dense in range(var['amount']['var']):
-        matrix = over_circle(matrix)
-    for i in range(var['blur']['var']):
-        matrix = over_blur(matrix)
-    for i in range(var['smear']['var']):
-        matrix = over_smear(matrix)
+    if var['post']['var']:
+        for dense in range(var['amount']['var']):
+            matrix = over_circle(matrix)
+        if var['swap']['var']:
+            for i in range(var['smear']['var']):
+                matrix = over_smear(matrix)
+            for i in range(var['blur']['var']):
+                matrix = over_blur(matrix)
+        else:
+            for i in range(var['blur']['var']):
+                matrix = over_blur(matrix)
+            for i in range(var['smear']['var']):
+                matrix = over_smear(matrix)
     return matrix

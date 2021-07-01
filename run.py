@@ -7,7 +7,7 @@ from sys import argv
 from random import seed, randint
 
 from glob import *
-from proc import proc_random, proc_noise, proc_noisy, proc_fuzz, proc_perlin, proc_gradient, proc_cloth, proc_skin, proc_wood, proc_brick, proc_plank
+from proc import proc_random, proc_noise, proc_noisy, proc_fuzz, proc_perlin, proc_perlins, proc_gradient, proc_cloth, proc_skin, proc_wood, proc_brick, proc_plank
 from blend import blend_subtract, blend_add, blend_combine
 
 pg.init()
@@ -57,7 +57,7 @@ def start():
 
     for key in var:
         data['trgt'].append(key)
-    data['proc'] = [proc_random, proc_fuzz, proc_noise, proc_noisy, proc_perlin, proc_gradient, proc_cloth, proc_skin, proc_wood, proc_brick, proc_plank]
+    data['proc'] = [proc_random, proc_fuzz, proc_noise, proc_noisy, proc_perlin, proc_perlins, proc_gradient, proc_cloth, proc_skin, proc_wood, proc_brick, proc_plank]
     data['blnd'] = [blend_subtract, blend_add, blend_combine]
     var['procedure']['lmt'][1] = len(data['proc'])-1
     var['blend']['lmt'][1] = len(data['blnd'])-1
@@ -146,6 +146,7 @@ def update_all():
             size[1]))#-(var['W']['var']*var['height']['var']*var['tile']['var'])))
     update_atlas()
     show_img()
+    show_preview()
     update_info()
 
 def update():
@@ -201,6 +202,7 @@ def update():
                     update_all()
 
         if event.type == pg.KEYDOWN:
+            
             if (event.mod == pg.KMOD_LSHIFT or event.mod == pg.KMOD_RSHIFT) and event.key == pg.K_a:
                 if var[data['trgt'][data['target']]]['var'] > var[data['trgt'][data['target']]]['lmt'][0]+5:
                     var[data['trgt'][data['target']]]['var'] -= 5
@@ -213,6 +215,7 @@ def update():
                 if var['auto']['var']:
                     new_img()
                 update_all()
+            
             if (event.mod == pg.KMOD_LSHIFT or event.mod == pg.KMOD_RSHIFT) and event.key == pg.K_d:
                 if var[data['trgt'][data['target']]]['lmt'][1] != 0:
                     if var[data['trgt'][data['target']]]['var'] < var[data['trgt'][data['target']]]['lmt'][1]-5:
@@ -255,14 +258,16 @@ def make_matrix():
     data['matrix'] = data['proc'][var['procedure']['var']](data['matrix'])
 
 def make_img():
-    img = pg.Surface((var['width']['var'], var['height']['var']))
+    width = var['width']['var']
+    height = var['height']['var']
+    img = pg.Surface((width, height))
     try:
         data['imgs'][var['img']['var']] = img
     except IndexError:
         data['imgs'].append(img)
-    for x in range(var['width']['var']):
-        for y in range(var['height']['var']):
-            v = int((y * var['width']['var']) + x)
+    for x in range(width):
+        for y in range(height):
+            v = int((y * width) + x)
             try:
                 data['imgs'][var['img']['var']].set_at((x, y), data['matrix'][v])
             except IndexError:
@@ -273,12 +278,47 @@ def new_img():
     make_img()
 
 def show_img():
+    size = var['tile']['var']
+    width = var['width']['var']
+    height = var['height']['var']
+    w = var['W']['var']
     for y in range(var['H']['var']):
         for x in range(var['W']['var']):
-            img = pg.transform.scale(data['imgs'][y*var['W']['var']+x], (var['width']['var']*var['tile']['var'], var['height']['var']*var['tile']['var']))
+            img = pg.transform.scale(data['imgs'][y*w+x], (width*size, height*size))
             rect = img.get_rect()
-            rect.move_ip(x*(var['tile']['var']*var['width']['var']), y*(var['tile']['var']*var['height']['var']))
+            rect.move_ip(x*(size*width), y*(size*height))
             screen.blit(img, rect)
+
+def show_preview():
+    size = 32
+    width = var['width']['var']
+    height = var['height']['var']
+
+    var['width']['var'] = size
+    var['height']['var'] = size
+
+    # Generate Preview Data
+    data['preview'] = fill_solid((var['R']['var'], var['G']['var'], var['B']['var']))
+    data['preview'] = data['proc'][var['procedure']['var']](data['preview'])
+    
+    var['width']['var'] = width
+    var['height']['var'] = height
+
+    # Make Preview Image
+    img = pg.Surface((width, height))
+    for x in range(size):
+        for y in range(size):
+            v = int((y * size) + x)
+            img.set_at((x, y), data['preview'][v])
+    img = pg.transform.scale(img, (2048, 2048))
+
+    # Draw Preview
+    x = var['width']['var']*var['tile']['var']
+    y = var['height']['var']*var['tile']['var']-128
+    rect = img.get_rect()
+    rect.move_ip(x, y)
+    screen.blit(img, rect)
+
     pg.display.update()
 
 def show_text(txt, x, y, color=(128, 128, 128), a=True):

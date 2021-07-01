@@ -112,6 +112,31 @@ def proc_perlin(m):
     matrix = overlay_img(matrix)
     return matrix
 
+def proc_perlins(m):
+    matrix = m
+    data['img_name'] = 'perlins'
+    n1 = noise.Noise(2, octaves=var['octaves']['var'], tile=(var['density']['var'], var['density']['var']), unbias=True, seed=8675309)
+    n2 = noise.Noise(2, octaves=var['octaves']['var'], tile=(var['density']['var'], var['density']['var']), unbias=True, seed=var['seed']['var'])
+    for y in range(var['height']['var']):
+        for x in range(var['width']['var']):
+            index = (y * var['width']['var']) + x
+            
+            mod1 = n1.get_plain_noise(x/(var['scale']['var']*.1), y/(var['scale']['var']*.1))
+            mod2 = n2.get_plain_noise(x/(var['pack']['var']*.1), y/(var['pack']['var']*.1))
+            
+            R = int(var['r']['var']*(mod1*(var['strength']['var']*.1)))
+            G = int(var['g']['var']*(mod1*(var['strength']['var']*.1)))
+            B = int(var['b']['var']*(mod1*(var['strength']['var']*.1)))
+
+            r = int(var['R']['var']*(mod2*(var['texture']['var']*.1)))
+            g = int(var['G']['var']*(mod2*(var['texture']['var']*.1)))
+            b = int(var['B']['var']*(mod2*(var['texture']['var']*.1)))
+            
+            matrix[index] = (data['blnd'][var['blend']['var']]((R, G, B), (r, g, b)))
+
+    matrix = overlay_img(matrix)
+    return matrix
+
 def proc_gradient(m):
     data['img_name'] = "gradient"
     matrix = m

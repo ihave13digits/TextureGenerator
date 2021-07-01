@@ -44,7 +44,9 @@ var = {
         'font' : {'var' : 11, 'lmt' : [8, 16]},
         'list' : {'var' : 2, 'lmt' : [0, 16]},
         # Triggers
-        'auto' : {'var' : True, 'lmt' : [0, 1]},
+        'auto' : {'var' : False, 'lmt' : [0, 1]},
+        'post' : {'var' : True, 'lmt' : [0, 1]},
+        'swap' : {'var' : True, 'lmt' : [0, 1]},
         'grey' : {'var' : True, 'lmt' : [0, 1]},
         'mode' : {'var' : True, 'lmt' : [0, 1]},
         'solid' : {'var' : True, 'lmt' : [0, 1]},
@@ -55,12 +57,21 @@ data = {
         'target' : 0,
         'img_name' : 'random',
 
-        'saved_imgs' : {'random':0, 'fuzz':0, 'noise':0, 'noisy':0, 'perlin':0, 'gradient':0, 'cloth':0, 'skin':0, 'wood':0, 'brick':0, 'plank':0, 'atlas':0},
+        'saved_imgs' : {
+            'random':0, 'fuzz':0, 'noise':0,
+            'noisy':0,
+            'perlin':0, 'perlins':0,
+            'gradient':0,
+            'cloth':0, 'skin':0,
+            'wood':0,
+            'brick':0, 'plank':0,
+            'atlas':0},
 
         'proc' : [],
         'blnd' : [],
         'trgt' : [],
 
         'imgs' : [],
-        'matrix' : []
+        'matrix' : [],
+        'preview' : []
     }
